@@ -11,6 +11,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: true,
     order: 0,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -21,6 +23,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: true,
     order: 1,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -31,6 +35,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: true,
     order: 2,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -41,6 +47,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 3,
     enabled: true,
+    detailLevel: "comprehensive",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -51,6 +59,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: true,
     order: 4,
     enabled: true,
+    detailLevel: "comprehensive",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -61,6 +71,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 5,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -71,6 +83,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: true,
     order: 6,
     enabled: true,
+    detailLevel: "comprehensive",
+    includeCodeExamples: true,
   },
   {
     id: nanoid(),
@@ -81,6 +95,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 7,
     enabled: true,
+    detailLevel: "comprehensive",
+    includeCodeExamples: true,
   },
   {
     id: nanoid(),
@@ -91,6 +107,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 8,
     enabled: true,
+    detailLevel: "comprehensive",
+    includeCodeExamples: true,
   },
   {
     id: nanoid(),
@@ -101,6 +119,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 9,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -111,6 +131,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 10,
     enabled: false,
+    detailLevel: "standard",
+    includeCodeExamples: true,
   },
   {
     id: nanoid(),
@@ -121,6 +143,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 11,
     enabled: false,
+    detailLevel: "standard",
+    includeCodeExamples: true,
   },
   {
     id: nanoid(),
@@ -131,6 +155,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 12,
     enabled: false,
+    detailLevel: "brief",
+    includeCodeExamples: false,
   },
   {
     id: nanoid(),
@@ -141,6 +167,8 @@ export const DEFAULT_SPEC_SECTIONS: SpecSection[] = [
     required: false,
     order: 13,
     enabled: true,
+    detailLevel: "standard",
+    includeCodeExamples: false,
   },
 ];
 

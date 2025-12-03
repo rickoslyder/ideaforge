@@ -22,9 +22,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SectionList } from "./section-list";
 import { createDefaultSpecConfig } from "@/lib/constants/default-sections";
-import type { SpecSection, SpecConfig } from "@/types/spec";
+import type { SpecSection, SpecConfig, DetailLevel } from "@/types/spec";
+import { DETAIL_LEVEL_LABELS, DETAIL_LEVEL_DESCRIPTIONS } from "@/types/spec";
 
 interface SpecConfiguratorProps {
   config: SpecConfig;
@@ -206,6 +215,12 @@ function SectionDialog({
   const [name, setName] = useState(section?.name || "");
   const [description, setDescription] = useState(section?.description || "");
   const [prompt, setPrompt] = useState(section?.prompt || "");
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>(
+    section?.detailLevel || "standard"
+  );
+  const [includeCodeExamples, setIncludeCodeExamples] = useState(
+    section?.includeCodeExamples ?? false
+  );
 
   // Reset form when dialog opens with a section
   useState(() => {
@@ -213,10 +228,14 @@ function SectionDialog({
       setName(section.name);
       setDescription(section.description);
       setPrompt(section.prompt);
+      setDetailLevel(section.detailLevel);
+      setIncludeCodeExamples(section.includeCodeExamples);
     } else {
       setName("");
       setDescription("");
       setPrompt("");
+      setDetailLevel("standard");
+      setIncludeCodeExamples(false);
     }
   });
 
@@ -229,6 +248,8 @@ function SectionDialog({
         name: name.trim(),
         description: description.trim(),
         prompt: prompt.trim(),
+        detailLevel,
+        includeCodeExamples,
       });
     } else {
       onSave({
@@ -237,17 +258,21 @@ function SectionDialog({
         prompt: prompt.trim(),
         required: false,
         enabled: true,
+        detailLevel,
+        includeCodeExamples,
       });
     }
 
     setName("");
     setDescription("");
     setPrompt("");
+    setDetailLevel("standard");
+    setIncludeCodeExamples(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -285,6 +310,48 @@ function SectionDialog({
               placeholder="Instructions for the AI when generating this section..."
               className="min-h-[100px]"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="detail-level">Detail Level</Label>
+              <Select
+                value={detailLevel}
+                onValueChange={(value) => setDetailLevel(value as DetailLevel)}
+              >
+                <SelectTrigger id="detail-level">
+                  <SelectValue placeholder="Select detail level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(DETAIL_LEVEL_LABELS) as DetailLevel[]).map(
+                    (level) => (
+                      <SelectItem key={level} value={level}>
+                        <div className="flex flex-col">
+                          <span>{DETAIL_LEVEL_LABELS[level]}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {DETAIL_LEVEL_DESCRIPTIONS[level]}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="code-examples">Include Code Examples</Label>
+              <div className="flex items-center gap-2 h-10">
+                <Switch
+                  id="code-examples"
+                  checked={includeCodeExamples}
+                  onCheckedChange={setIncludeCodeExamples}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {includeCodeExamples ? "Yes" : "No"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

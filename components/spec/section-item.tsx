@@ -2,11 +2,12 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Code } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import type { SpecSection } from "@/types/spec";
+import { DETAIL_LEVEL_LABELS } from "@/types/spec";
 
 interface SectionItemProps {
   section: SpecSection;
@@ -14,6 +15,12 @@ interface SectionItemProps {
   onDelete: (id: string) => void;
   onEdit: (section: SpecSection) => void;
 }
+
+const DETAIL_LEVEL_COLORS = {
+  brief: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  standard: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  comprehensive: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
 
 export function SectionItem({
   section,
@@ -63,10 +70,24 @@ export function SectionItem({
         className="flex-1 min-w-0 cursor-pointer"
         onClick={() => onEdit(section)}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm truncate">{section.name}</span>
           {section.required && (
             <span className="text-xs text-muted-foreground">(required)</span>
+          )}
+          <span
+            className={cn(
+              "text-xs px-1.5 py-0.5 rounded-full font-medium",
+              DETAIL_LEVEL_COLORS[section.detailLevel]
+            )}
+          >
+            {DETAIL_LEVEL_LABELS[section.detailLevel]}
+          </span>
+          {section.includeCodeExamples && (
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+              <Code className="h-3 w-3" />
+              <span className="hidden sm:inline">Code</span>
+            </span>
           )}
         </div>
         <p className="text-xs text-muted-foreground truncate">
