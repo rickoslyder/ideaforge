@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { SyncStatus } from "@/components/sync/sync-status";
 
 interface NavHeaderProps {
   onMenuClick?: () => void;
@@ -25,6 +26,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <SyncStatus />
         <ThemeToggle />
         <UserMenu />
       </div>

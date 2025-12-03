@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/toaster";
+import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,6 +32,8 @@ export default function RootLayout({
       >
         <ClerkProvider>
           {children}
+          <Toaster />
+          <KeyboardShortcutsDialog />
         </ClerkProvider>
       </body>
     </html>
