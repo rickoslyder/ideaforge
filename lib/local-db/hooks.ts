@@ -1,29 +1,65 @@
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
+import { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { getDb } from "./client";
 import type { LocalProject, LocalMessage, LocalAttachment, SyncQueueItem } from "./schema";
 import type { Phase, SpecConfig } from "@/lib/db/types";
 
+// SSR-safe hook wrapper
+function useClientSideQuery<T>(
+  queryFn: () => Promise<T>,
+  deps: unknown[],
+  defaultValue: T
+): T {
+  const [data, setData] = useState<T>(defaultValue);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let mounted = true;
+
+    const fetchData = async () => {
+      try {
+        const result = await queryFn();
+        if (mounted) {
+          setData(result);
+        }
+      } catch (error) {
+        console.error("Query error:", error);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return data;
+}
+
 // Project hooks
 
 export function useLocalProjects(userId: string) {
-  return useLiveQuery(
-    () =>
-      getDb()
+  return useClientSideQuery(
+    async () => {
+      const projects = await getDb()
         .projects.where("clerkUserId")
         .equals(userId)
         .filter((p) => !p.deletedAt)
-        .sortBy("updatedAt")
-        .then((projects) => projects.reverse()),
+        .sortBy("updatedAt");
+      return projects.reverse();
+    },
     [userId],
-    []
+    [] as LocalProject[]
   );
 }
 
 export function useLocalProject(localId: string) {
-  return useLiveQuery(
+  return useClientSideQuery(
     () => getDb().projects.get(localId),
     [localId],
     undefined
@@ -33,43 +69,43 @@ export function useLocalProject(localId: string) {
 // Message hooks
 
 export function useLocalMessages(projectLocalId: string, phase: Phase) {
-  return useLiveQuery(
+  return useClientSideQuery(
     () =>
       getDb()
         .messages.where("[projectLocalId+phase]")
         .equals([projectLocalId, phase])
         .sortBy("createdAt"),
     [projectLocalId, phase],
-    []
+    [] as LocalMessage[]
   );
 }
 
 // Attachment hooks
 
 export function useLocalAttachments(projectLocalId: string) {
-  return useLiveQuery(
+  return useClientSideQuery(
     () =>
       getDb()
         .attachments.where("projectLocalId")
         .equals(projectLocalId)
         .sortBy("createdAt"),
     [projectLocalId],
-    []
+    [] as LocalAttachment[]
   );
 }
 
 // Sync queue hooks
 
 export function useSyncQueue() {
-  return useLiveQuery(
+  return useClientSideQuery(
     () => getDb().syncQueue.orderBy("createdAt").toArray(),
     [],
-    []
+    [] as SyncQueueItem[]
   );
 }
 
 export function usePendingSyncCount() {
-  return useLiveQuery(() => getDb().syncQueue.count(), [], 0);
+  return useClientSideQuery(() => getDb().syncQueue.count(), [], 0);
 }
 
 // CRUD operations with sync queue
