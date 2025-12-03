@@ -18,6 +18,16 @@ export class IdeaForgeDB extends Dexie {
   constructor() {
     super("ideaforge");
 
+    // Version 1: Initial schema
+    this.version(1).stores({
+      projects: "localId, remoteId, clerkUserId, syncStatus, updatedAt",
+      messages: "localId, remoteId, projectLocalId, [projectLocalId+phase], createdAt",
+      attachments: "localId, remoteId, projectLocalId, syncStatus",
+      syncQueue: "id, table, operation, createdAt",
+      pricingCache: "id",
+    });
+
+    // Version 2: Add localId index to syncQueue
     this.version(SCHEMA_VERSION).stores({
       projects: INDEXES.projects,
       messages: INDEXES.messages,

@@ -72,13 +72,13 @@ export interface PricingCacheItem {
 }
 
 // Schema version for migrations
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 // Index definitions for Dexie
 export const INDEXES = {
   projects: "localId, remoteId, clerkUserId, syncStatus, updatedAt",
   messages: "localId, remoteId, projectLocalId, [projectLocalId+phase], createdAt",
   attachments: "localId, remoteId, projectLocalId, syncStatus",
-  syncQueue: "id, table, operation, createdAt",
+  syncQueue: "id, table, operation, localId, createdAt",
   pricingCache: "id",
 } as const;
