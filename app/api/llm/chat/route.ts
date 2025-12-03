@@ -3,8 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { createLLMClient, getProviderFromModel } from "@/lib/llm/client";
 import { streamToReadable } from "@/lib/llm/streaming";
 import { decryptApiKey } from "@/lib/crypto/api-keys";
-import { getApiKey } from "@/lib/db/queries/api-keys";
+import { getApiKey, getApiKeys } from "@/lib/db/queries/api-keys";
 import type { Provider, Message } from "@/lib/llm/types";
+import { DEFAULT_MODELS } from "@/lib/llm/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
+    let {
       provider: providedProvider,
       model,
       messages,
@@ -23,24 +24,41 @@ export async function POST(req: NextRequest) {
       maxTokens,
     } = body as {
       provider?: Provider;
-      model: string;
+      model?: string;
       messages: Message[];
       stream?: boolean;
       temperature?: number;
       maxTokens?: number;
     };
 
-    if (!model || !messages || !Array.isArray(messages)) {
-      return new Response("Invalid request: model and messages are required", {
+    if (!messages || !Array.isArray(messages)) {
+      return new Response("Invalid request: messages are required", {
         status: 400,
       });
     }
 
-    // Determine provider from model if not specified
-    const provider = providedProvider || getProviderFromModel(model);
+    // If no model/provider specified, use the user's first/default API key
+    let provider: Provider;
+    let apiKeyRecord;
 
-    // Get and decrypt API key
-    const apiKeyRecord = await getApiKey(userId, provider);
+    if (model) {
+      provider = providedProvider || getProviderFromModel(model);
+      apiKeyRecord = await getApiKey(userId, provider);
+    } else {
+      // Get any available API key (preferring default)
+      const allKeys = await getApiKeys(userId);
+      if (allKeys.length === 0) {
+        return new Response(
+          "No API keys configured. Please add an API key in Settings.",
+          { status: 400 }
+        );
+      }
+      // Prefer default key, otherwise use first one
+      apiKeyRecord = allKeys.find((k) => k.is_default) || allKeys[0];
+      provider = apiKeyRecord.provider as Provider;
+      model = DEFAULT_MODELS[provider];
+    }
+
     if (!apiKeyRecord) {
       return new Response(`No API key configured for provider: ${provider}`, {
         status: 400,
