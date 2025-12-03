@@ -1,16 +1,15 @@
 "use client";
 
-import { use } from "react";
 import { PlanPhase } from "@/components/plan/plan-phase";
 import { useProject } from "@/hooks/use-project";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PlanPageProps {
-  params: Promise<{ projectId: string }>;
+  params: { projectId: string };
 }
 
 export default function PlanPage({ params }: PlanPageProps) {
-  const { projectId } = use(params);
+  const { projectId } = params;
   const { project, isLoading } = useProject(projectId);
 
   if (isLoading) {

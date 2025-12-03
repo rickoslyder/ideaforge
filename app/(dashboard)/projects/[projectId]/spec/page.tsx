@@ -1,16 +1,15 @@
 "use client";
 
-import { use } from "react";
 import { SpecPhase } from "@/components/spec/spec-phase";
 import { useProject } from "@/hooks/use-project";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SpecPageProps {
-  params: Promise<{ projectId: string }>;
+  params: { projectId: string };
 }
 
 export default function SpecPage({ params }: SpecPageProps) {
-  const { projectId } = use(params);
+  const { projectId } = params;
   const { project, isLoading } = useProject(projectId);
 
   if (isLoading) {

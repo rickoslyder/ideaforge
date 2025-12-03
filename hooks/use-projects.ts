@@ -10,23 +10,8 @@ import {
 import type { ProjectListItem, CreateProjectInput, UpdateProjectInput } from "@/types/project";
 
 export function useProjects() {
-  console.log("[useProjects] Hook called");
-
-  let userId: string | null | undefined;
-  try {
-    console.log("[useProjects] About to call useAuth()");
-    const auth = useAuth();
-    console.log("[useProjects] useAuth() returned:", typeof auth, auth);
-    userId = auth.userId;
-    console.log("[useProjects] userId:", userId);
-  } catch (error) {
-    console.error("[useProjects] useAuth() threw error:", error);
-    throw error;
-  }
-
-  console.log("[useProjects] About to call useLocalProjects");
+  const { userId } = useAuth();
   const projects = useLocalProjects(userId || "");
-  console.log("[useProjects] useLocalProjects returned:", projects?.length, "projects");
 
   const mappedProjects: ProjectListItem[] = (projects || []).map((p) => ({
     localId: p.localId,

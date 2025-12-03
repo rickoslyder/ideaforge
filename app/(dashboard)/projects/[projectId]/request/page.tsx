@@ -1,16 +1,15 @@
 "use client";
 
-import { use } from "react";
 import { RequestPhase } from "@/components/request/request-phase";
 import { useProject } from "@/hooks/use-project";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RequestPageProps {
-  params: Promise<{ projectId: string }>;
+  params: { projectId: string };
 }
 
 export default function RequestPage({ params }: RequestPageProps) {
-  const { projectId } = use(params);
+  const { projectId } = params;
   const { project, isLoading } = useProject(projectId);
 
   if (isLoading) {

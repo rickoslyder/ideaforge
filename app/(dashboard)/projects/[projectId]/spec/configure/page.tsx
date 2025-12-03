@@ -1,6 +1,5 @@
 "use client";
 
-import { use } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,11 +8,11 @@ import { useSpecConfig } from "@/hooks/use-spec-config";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ConfigureSpecPageProps {
-  params: Promise<{ projectId: string }>;
+  params: { projectId: string };
 }
 
 export default function ConfigureSpecPage({ params }: ConfigureSpecPageProps) {
-  const { projectId } = use(params);
+  const { projectId } = params;
   const router = useRouter();
   const { config, updateConfig, isLoading } = useSpecConfig(projectId);
 
