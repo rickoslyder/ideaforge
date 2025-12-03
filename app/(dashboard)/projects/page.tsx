@@ -9,7 +9,19 @@ import { ProjectSearch } from "@/components/projects/project-search";
 import { useProjects } from "@/hooks/use-projects";
 
 export default function ProjectsPage() {
-  const { projects, isLoading, removeProject } = useProjects();
+  console.log("[ProjectsPage] Component rendering");
+
+  let projectsData;
+  try {
+    console.log("[ProjectsPage] About to call useProjects()");
+    projectsData = useProjects();
+    console.log("[ProjectsPage] useProjects() returned successfully");
+  } catch (error) {
+    console.error("[ProjectsPage] useProjects() threw:", error);
+    throw error;
+  }
+
+  const { projects, isLoading, removeProject } = projectsData;
   const [search, setSearch] = useState("");
 
   const filteredProjects = useMemo(() => {
