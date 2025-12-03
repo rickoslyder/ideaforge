@@ -30,9 +30,9 @@ export default function PlanPage({ params }: PlanPageProps) {
     );
   }
 
-  // TODO: Get actual request and spec from project data/database
-  const projectRequest = project.description || undefined;
-  const projectSpec = undefined; // Would come from stored spec
+  // Get request and spec from project data
+  const projectRequest = project.requestContent || project.initialIdea;
+  const projectSpec = project.specContent;
 
   return (
     <div className="h-full">

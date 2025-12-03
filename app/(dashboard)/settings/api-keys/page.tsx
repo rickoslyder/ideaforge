@@ -14,7 +14,7 @@ export default function ApiKeysPage() {
   const { apiKeys, isLoading, addApiKey, removeApiKey, setDefaultApiKey } =
     useApiKeys();
 
-  const configuredProviders = [...new Set(apiKeys.map((k) => k.provider))];
+  const configuredProviders = Array.from(new Set(apiKeys.map((k) => k.provider)));
 
   return (
     <div className="space-y-8">

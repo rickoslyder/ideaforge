@@ -95,6 +95,7 @@ export class AnthropicProvider implements LLMClient {
 
         if (parsed.type === "content_block_delta" && parsed.delta?.text) {
           yield {
+            type: "content" as const,
             content: parsed.delta.text,
             done: false,
           };
@@ -106,8 +107,7 @@ export class AnthropicProvider implements LLMClient {
 
         if (parsed.type === "message_stop") {
           yield {
-            content: "",
-            done: true,
+            type: "done" as const,
             inputTokens,
             outputTokens,
           };

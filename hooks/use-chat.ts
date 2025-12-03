@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { nanoid } from "nanoid";
 import type { Message, StreamingMessage, ChatState } from "@/types/message";
 import type { Provider } from "@/lib/llm/types";
-import { parseSSEStream } from "@/lib/llm/streaming";
+import { parseSSEStreamChunks } from "@/lib/llm/streaming";
 
 interface UseChatOptions {
   projectId: string;
@@ -115,7 +115,7 @@ export function useChat({
         let fullContent = "";
         const startTime = Date.now();
 
-        for await (const chunk of parseSSEStream(response.body)) {
+        for await (const chunk of parseSSEStreamChunks(response.body)) {
           if (abortControllerRef.current?.signal.aborted) {
             break;
           }

@@ -1,10 +1,10 @@
 import type { StreamChunk } from "./types";
 
 // Server-Sent Events (SSE) parser for streaming responses
-
+// Used internally by providers to parse raw SSE data
 export function parseSSEStream(
   reader: ReadableStreamDefaultReader<Uint8Array>
-): AsyncGenerator<string> {
+): AsyncGenerator<string, void, unknown> {
   const decoder = new TextDecoder();
 
   return (async function* () {
@@ -22,7 +22,7 @@ export function parseSSEStream(
         const trimmed = line.trim();
         if (trimmed.startsWith("data: ")) {
           const data = trimmed.slice(6);
-          if (data !== "[DONE]") {
+          if (data && data !== "[DONE]") {
             yield data;
           }
         }
@@ -34,8 +34,58 @@ export function parseSSEStream(
       const trimmed = buffer.trim();
       if (trimmed.startsWith("data: ")) {
         const data = trimmed.slice(6);
-        if (data !== "[DONE]") {
+        if (data && data !== "[DONE]") {
           yield data;
+        }
+      }
+    }
+  })();
+}
+
+// Higher-level function that parses SSE stream into StreamChunks
+export function parseSSEStreamChunks(
+  stream: ReadableStream<Uint8Array>
+): AsyncGenerator<StreamChunk, void, unknown> {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+
+  return (async function* () {
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("data: ")) {
+          const data = trimmed.slice(6);
+          if (data && data !== "[DONE]") {
+            try {
+              yield JSON.parse(data) as StreamChunk;
+            } catch {
+              yield { type: "content", content: data };
+            }
+          }
+        }
+      }
+    }
+
+    // Process remaining buffer
+    if (buffer.trim()) {
+      const trimmed = buffer.trim();
+      if (trimmed.startsWith("data: ")) {
+        const data = trimmed.slice(6);
+        if (data && data !== "[DONE]") {
+          try {
+            yield JSON.parse(data) as StreamChunk;
+          } catch {
+            yield { type: "content", content: data };
+          }
         }
       }
     }
@@ -102,9 +152,15 @@ export async function accumulateStream(
   let outputTokens: number | undefined;
 
   for await (const chunk of generator) {
-    content += chunk.content;
-    if (chunk.inputTokens !== undefined) inputTokens = chunk.inputTokens;
-    if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
+    if (chunk.type === "content") {
+      content += chunk.content;
+      if (chunk.inputTokens !== undefined) inputTokens = chunk.inputTokens;
+      if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
+    } else if (chunk.type === "done") {
+      if (chunk.inputTokens !== undefined) inputTokens = chunk.inputTokens;
+      if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
+    }
+    // Skip error chunks in accumulation
   }
 
   return { content, inputTokens, outputTokens };

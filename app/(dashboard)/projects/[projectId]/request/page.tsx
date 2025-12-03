@@ -36,7 +36,7 @@ export default function RequestPage({ params }: RequestPageProps) {
       <RequestPhase
         projectId={projectId}
         projectName={project.name}
-        projectDescription={project.description || undefined}
+        projectDescription={project.initialIdea}
       />
     </div>
   );

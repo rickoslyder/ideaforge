@@ -30,8 +30,8 @@ export default function SpecPage({ params }: SpecPageProps) {
     );
   }
 
-  // TODO: Get the finalized request from the project data
-  const projectRequest = project.description || undefined;
+  // Get the finalized request from the project data
+  const projectRequest = project.requestContent || project.initialIdea;
 
   return (
     <div className="h-full">

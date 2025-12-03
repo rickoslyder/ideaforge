@@ -121,6 +121,7 @@ export class GoogleProvider implements LLMClient {
             const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) {
               yield {
+                type: "content" as const,
                 content: text,
                 done: false,
               };
@@ -128,8 +129,7 @@ export class GoogleProvider implements LLMClient {
 
             if (parsed.candidates?.[0]?.finishReason) {
               yield {
-                content: "",
-                done: true,
+                type: "done" as const,
                 inputTokens,
                 outputTokens,
               };

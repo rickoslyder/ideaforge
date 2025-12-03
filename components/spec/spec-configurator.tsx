@@ -165,7 +165,11 @@ export function SpecConfigurator({
         open={!!editingSection}
         onOpenChange={() => setEditingSection(null)}
         section={editingSection}
-        onSave={handleSaveSection}
+        onSave={(section) => {
+          if ("id" in section && "order" in section) {
+            handleSaveSection(section as SpecSection);
+          }
+        }}
         title="Edit Section"
       />
 
@@ -173,7 +177,11 @@ export function SpecConfigurator({
       <SectionDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        onSave={handleAddSection}
+        onSave={(section) => {
+          if (!("id" in section)) {
+            handleAddSection(section);
+          }
+        }}
         title="Add Section"
       />
     </div>

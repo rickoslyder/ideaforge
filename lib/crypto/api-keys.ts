@@ -23,7 +23,7 @@ async function deriveKey(
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt,
+      salt: salt as BufferSource,
       iterations: ITERATIONS,
       hash: "SHA-256",
     },
@@ -71,7 +71,7 @@ export async function encryptApiKey(
   combined.set(new Uint8Array(encrypted), salt.length + iv.length);
 
   // Return as base64
-  return btoa(String.fromCharCode(...combined));
+  return btoa(String.fromCharCode.apply(null, Array.from(combined)));
 }
 
 export async function decryptApiKey(

@@ -86,6 +86,7 @@ export class OllamaProvider implements LLMClient {
 
           if (parsed.message?.content) {
             yield {
+              type: "content" as const,
               content: parsed.message.content,
               done: false,
             };
@@ -96,8 +97,7 @@ export class OllamaProvider implements LLMClient {
             outputTokens = parsed.eval_count;
 
             yield {
-              content: "",
-              done: true,
+              type: "done" as const,
               inputTokens,
               outputTokens,
             };

@@ -230,7 +230,7 @@ async function queueSync(
   table: SyncQueueItem["table"],
   operation: SyncQueueItem["operation"],
   localId: string,
-  data: Record<string, unknown>
+  data: LocalProject | LocalMessage | LocalAttachment
 ): Promise<void> {
   const db = getDb();
 
@@ -245,7 +245,7 @@ async function queueSync(
     table,
     operation,
     localId,
-    data,
+    data: data as unknown as Record<string, unknown>,
     attempts: 0,
     createdAt: new Date(),
   };

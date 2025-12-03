@@ -23,12 +23,23 @@ export interface ChatResponse {
   finishReason?: string;
 }
 
-export interface StreamChunk {
-  content: string;
-  done: boolean;
-  inputTokens?: number;
-  outputTokens?: number;
-}
+export type StreamChunk =
+  | {
+      type: "content";
+      content: string;
+      done?: boolean;
+      inputTokens?: number;
+      outputTokens?: number;
+    }
+  | {
+      type: "error";
+      error: string;
+    }
+  | {
+      type: "done";
+      inputTokens?: number;
+      outputTokens?: number;
+    };
 
 export interface ProviderConfig {
   apiKey: string;

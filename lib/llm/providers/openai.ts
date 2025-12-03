@@ -84,6 +84,7 @@ export class OpenAIProvider implements LLMClient {
         const delta = parsed.choices?.[0]?.delta;
         if (delta?.content) {
           yield {
+            type: "content" as const,
             content: delta.content,
             done: false,
           };
@@ -91,8 +92,7 @@ export class OpenAIProvider implements LLMClient {
 
         if (parsed.choices?.[0]?.finish_reason) {
           yield {
-            content: "",
-            done: true,
+            type: "done" as const,
             inputTokens,
             outputTokens,
           };
