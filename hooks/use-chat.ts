@@ -14,6 +14,7 @@ interface UseChatOptions {
   model?: string;
   provider?: Provider;
   systemPrompt?: string;
+  maxTokens?: number;
   onMessage?: (message: Message) => void | Promise<void>;
   onError?: (error: Error) => void;
 }
@@ -55,6 +56,7 @@ export function useChat({
   model,
   provider,
   systemPrompt,
+  maxTokens,
   onMessage,
   onError,
 }: UseChatOptions): UseChatReturn {
@@ -149,6 +151,7 @@ export function useChat({
             model,
             provider,
             stream: true,
+            maxTokens,
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -249,6 +252,7 @@ export function useChat({
       model,
       provider,
       systemPrompt,
+      maxTokens,
       messages,
       streamingMessage,
       onMessage,

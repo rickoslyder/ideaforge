@@ -61,6 +61,7 @@ export function PlanPhase({
       projectId,
       phase: "plan",
       systemPrompt,
+      maxTokens: 16384, // Plans can be long, need more tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {
           const parsedSteps = parsePlan(message.content);
@@ -72,6 +73,19 @@ export function PlanPhase({
               await savePhaseContent("plan", serializePlan(parsedSteps));
             } catch (err) {
               console.error("Failed to auto-save plan:", err);
+            }
+          } else {
+            // If parsing failed, still save the raw content so it's not lost
+            console.warn("Plan parsing failed, saving raw content");
+            try {
+              await savePhaseContent("plan", message.content);
+              toast({
+                title: "Plan saved (raw)",
+                description: "The plan couldn't be parsed but was saved. Try regenerating.",
+                variant: "destructive",
+              });
+            } catch (err) {
+              console.error("Failed to save raw plan content:", err);
             }
           }
         }

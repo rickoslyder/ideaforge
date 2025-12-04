@@ -74,10 +74,10 @@ export function repairJson(text: string): string {
   // Remove markdown code fences
   repaired = repaired.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
 
-  // Try to find JSON object or array
-  const jsonMatch = repaired.match(/[\[{][\s\S]*[\]}]/);
-  if (jsonMatch) {
-    repaired = jsonMatch[0];
+  // Try to find JSON object or array start
+  const startMatch = repaired.match(/[\[{]/);
+  if (startMatch) {
+    repaired = repaired.slice(startMatch.index);
   }
 
   // Fix common issues
@@ -90,7 +90,74 @@ export function repairJson(text: string): string {
     '$1"$2"$3'
   );
 
+  // Handle truncated JSON by attempting to close open structures
+  repaired = attemptToCloseTruncatedJson(repaired);
+
   return repaired;
+}
+
+// Attempt to close truncated JSON by adding missing closing brackets
+function attemptToCloseTruncatedJson(text: string): string {
+  // Count open and close brackets
+  let openBraces = 0;
+  let openBrackets = 0;
+  let inString = false;
+  let escape = false;
+
+  for (const char of text) {
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (char === "\\") {
+      escape = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (char === "{") openBraces++;
+    if (char === "}") openBraces--;
+    if (char === "[") openBrackets++;
+    if (char === "]") openBrackets--;
+  }
+
+  // If we're in a string, try to close it
+  if (inString) {
+    // Find a good place to cut - last complete-looking value
+    const lastQuote = text.lastIndexOf('"');
+    if (lastQuote > 0) {
+      // Check if this looks like a complete value
+      const afterQuote = text.slice(lastQuote + 1).trim();
+      if (!afterQuote || afterQuote.startsWith(",") || afterQuote.startsWith("]") || afterQuote.startsWith("}")) {
+        // Already closed
+      } else {
+        // Try to close the string
+        text = text.slice(0, lastQuote + 1);
+        // Recount brackets
+        return attemptToCloseTruncatedJson(text);
+      }
+    }
+  }
+
+  // Remove trailing incomplete elements (like trailing commas or partial values)
+  text = text.replace(/,\s*$/, "");
+  text = text.replace(/:\s*$/, ': null');
+  text = text.replace(/:\s*"[^"]*$/, ': ""');
+
+  // Add missing closing brackets
+  let result = text;
+  for (let i = 0; i < openBrackets; i++) {
+    result += "]";
+  }
+  for (let i = 0; i < openBraces; i++) {
+    result += "}";
+  }
+
+  return result;
 }
 
 export function tryParseJson<T>(text: string): T | null {
