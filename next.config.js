@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
+  // Only use standalone output for Docker builds, not Vercel
+  ...(process.env.BUILD_STANDALONE === "true" && { output: "standalone" }),
   images: {
     remotePatterns: [
       {
