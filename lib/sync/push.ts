@@ -285,8 +285,5 @@ export async function pushChanges(
   };
 }
 
-// Check if we should attempt push (online check)
-export function canPush(): boolean {
-  if (typeof navigator === "undefined") return true;
-  return navigator.onLine;
-}
+// Re-export canPush from network for backwards compatibility
+export { canPush } from "./network";

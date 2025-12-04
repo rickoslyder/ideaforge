@@ -1,5 +1,5 @@
 import { getRetryableChanges, getPendingCount } from "./queue";
-import { canPush } from "./push";
+import { canPush } from "./network";
 import type { SyncState } from "@/stores/sync-store";
 
 export interface SyncEngineConfig {
