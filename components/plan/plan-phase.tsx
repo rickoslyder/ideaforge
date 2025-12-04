@@ -16,6 +16,7 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { PlanStepList } from "./plan-step-list";
 import { useChat } from "@/hooks/use-chat";
 import { useProject } from "@/hooks/use-project";
+import { useModelConfig } from "@/hooks/use-model-config";
 import { getPlanPhaseSystemPrompt } from "@/prompts/plan-phase";
 import { parsePlan, serializePlan } from "@/lib/parsers/plan-steps";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +38,7 @@ export function PlanPhase({
 }: PlanPhaseProps & { initialPlanContent?: string }) {
   const router = useRouter();
   const { savePhaseContent } = useProject(projectId);
+  const { getModelForPhase } = useModelConfig();
   const [steps, setSteps] = useState<PlanStep[]>(() => {
     // Initialize from saved plan content if available
     if (initialPlanContent) {
@@ -55,12 +57,14 @@ export function PlanPhase({
     projectRequest && projectSpec
       ? getPlanPhaseSystemPrompt(projectRequest, projectSpec)
       : undefined;
+  const model = getModelForPhase("plan");
 
   const { messages, streamingMessage, isLoading, error, sendMessage, stop } =
     useChat({
       projectId,
       phase: "plan",
       systemPrompt,
+      model,
       maxTokens: 16384, // Plans can be long, need more tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {

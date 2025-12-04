@@ -17,6 +17,7 @@ import { MarkdownPreview } from "./markdown-preview";
 import { useChat } from "@/hooks/use-chat";
 import { useProject } from "@/hooks/use-project";
 import { useSpecConfig } from "@/hooks/use-spec-config";
+import { useModelConfig } from "@/hooks/use-model-config";
 import { getFullSpecPrompt } from "@/prompts/spec-phase";
 import { toast } from "@/hooks/use-toast";
 
@@ -36,6 +37,7 @@ export function SpecPhase({
   const router = useRouter();
   const { advanceToPhase, savePhaseContent } = useProject(projectId);
   const { config, getEnabledSections } = useSpecConfig(projectId);
+  const { getModelForPhase } = useModelConfig();
   const [generatedSpec, setGeneratedSpec] = useState<string>(initialSpec || "");
   const [activeTab, setActiveTab] = useState<"chat" | "preview">(
     initialSpec ? "preview" : "chat"
@@ -45,12 +47,14 @@ export function SpecPhase({
   const systemPrompt = projectRequest
     ? getFullSpecPrompt(projectRequest, getEnabledSections(), config.customInstructions)
     : undefined;
+  const model = getModelForPhase("spec");
 
   const { messages, streamingMessage, isLoading, error, sendMessage, stop } =
     useChat({
       projectId,
       phase: "spec",
       systemPrompt,
+      model,
       maxTokens: 16384, // Specs can be long, need more tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {

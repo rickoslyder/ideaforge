@@ -6,6 +6,7 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { RequestPreview } from "./request-preview";
 import { useChat } from "@/hooks/use-chat";
 import { useProject } from "@/hooks/use-project";
+import { useModelConfig } from "@/hooks/use-model-config";
 import { getRequestPhasePrompt } from "@/prompts/request-phase";
 import { extractRequest, hasRequestBlock } from "@/lib/parsers/request-block";
 import { toast } from "@/hooks/use-toast";
@@ -23,11 +24,13 @@ export function RequestPhase({
 }: RequestPhaseProps) {
   const router = useRouter();
   const { advanceToPhase } = useProject(projectId);
+  const { getModelForPhase } = useModelConfig();
   const [extractedRequest, setExtractedRequest] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const systemPrompt = getRequestPhasePrompt(projectDescription);
+  const model = getModelForPhase("request");
 
   const {
     messages,
@@ -40,6 +43,7 @@ export function RequestPhase({
     projectId,
     phase: "request",
     systemPrompt,
+    model,
     onMessage: (message) => {
       // Check if the response contains a finalized request
       if (message.role === "assistant" && hasRequestBlock(message.content)) {

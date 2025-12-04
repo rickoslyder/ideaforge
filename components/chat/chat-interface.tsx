@@ -3,6 +3,7 @@
 import { MessageList } from "./message-list";
 import { ChatInput } from "./chat-input";
 import { EmptyChat } from "./empty-chat";
+import { ModelSelector } from "./model-selector";
 import type { Message, StreamingMessage } from "@/types/message";
 
 interface ChatInterfaceProps {
@@ -16,6 +17,7 @@ interface ChatInterfaceProps {
   onStop?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  showModelSelector?: boolean;
 }
 
 export function ChatInterface({
@@ -29,6 +31,7 @@ export function ChatInterface({
   onStop,
   placeholder,
   disabled,
+  showModelSelector = true,
 }: ChatInterfaceProps) {
   const hasMessages = messages.length > 0 || streamingMessage;
 
@@ -46,13 +49,20 @@ export function ChatInterface({
         <EmptyChat phase={phase} projectName={projectName} />
       )}
 
-      <ChatInput
-        onSend={onSend}
-        onStop={onStop}
-        isLoading={isLoading}
-        placeholder={placeholder}
-        disabled={disabled}
-      />
+      <div className="border-t">
+        {showModelSelector && (
+          <div className="px-4 pt-2">
+            <ModelSelector phase={phase} disabled={isLoading} />
+          </div>
+        )}
+        <ChatInput
+          onSend={onSend}
+          onStop={onStop}
+          isLoading={isLoading}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+      </div>
     </div>
   );
 }
