@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ListChecks, MessageSquare, Download, Copy, Check, Save, Loader2 } from "lucide-react";
+import { ListChecks, MessageSquare, Download, Copy, Check, Save, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -59,6 +59,21 @@ export function PlanPhase({
       : undefined;
   const model = getModelForPhase("plan");
 
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  // Detect if JSON output appears truncated
+  function detectTruncation(content: string): boolean {
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
+    if (!jsonMatch) return false;
+    const jsonText = jsonMatch[1].trim();
+    // Check if JSON ends properly
+    const openBraces = (jsonText.match(/{/g) || []).length;
+    const closeBraces = (jsonText.match(/}/g) || []).length;
+    const openBrackets = (jsonText.match(/\[/g) || []).length;
+    const closeBrackets = (jsonText.match(/]/g) || []).length;
+    return openBraces !== closeBraces || openBrackets !== closeBrackets;
+  }
+
   const { messages, streamingMessage, isLoading, error, sendMessage, stop } =
     useChat({
       projectId,
@@ -68,6 +83,10 @@ export function PlanPhase({
       maxTokens: 32768, // Plans can be very long, need lots of tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {
+          // Check for truncation
+          const truncated = detectTruncation(message.content);
+          setIsTruncated(truncated);
+
           const parsedSteps = parsePlan(message.content);
           if (parsedSteps.length > 0) {
             setSteps(parsedSteps);
@@ -78,8 +97,27 @@ export function PlanPhase({
             } catch (err) {
               console.error("Failed to auto-save plan:", err);
             }
+            if (truncated) {
+              toast({
+                title: "Plan may be incomplete",
+                description: "The output was truncated. Use 'Continue' to get the rest.",
+              });
+            }
+          } else if (truncated) {
+            // Truncated and couldn't parse - save raw and notify
+            console.warn("Plan truncated, saving partial content");
+            try {
+              await savePhaseContent("plan", message.content);
+              toast({
+                title: "Plan truncated",
+                description: "Click 'Continue Generation' to complete the plan.",
+                variant: "destructive",
+              });
+            } catch (err) {
+              console.error("Failed to save partial plan:", err);
+            }
           } else {
-            // If parsing failed, still save the raw content so it's not lost
+            // Not truncated but still failed to parse
             console.warn("Plan parsing failed, saving raw content");
             try {
               await savePhaseContent("plan", message.content);
@@ -95,6 +133,11 @@ export function PlanPhase({
         }
       },
     });
+
+  function handleContinueGeneration() {
+    sendMessage("Continue generating the plan from where you left off. Complete the JSON structure.");
+    setIsTruncated(false);
+  }
 
   // Save plan content when steps change (debounced via unsaved flag)
   const savePlan = useCallback(async () => {
@@ -207,37 +250,49 @@ export function PlanPhase({
           </Tabs>
         </div>
 
-        {hasPlan && (
-          <div className="flex items-center gap-2">
-            {hasUnsavedChanges && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={savePlan}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                Save
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={handleCopy}>
-              {copied ? (
-                <Check className="mr-2 h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="mr-2 h-4 w-4" />
+        <div className="flex items-center gap-2">
+          {isTruncated && !isLoading && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleContinueGeneration}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Continue Generation
+            </Button>
+          )}
+          {hasPlan && (
+            <>
+              {hasUnsavedChanges && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={savePlan}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save
+                </Button>
               )}
-              Copy
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </div>
-        )}
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                {copied ? (
+                  <Check className="mr-2 h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
+                Copy
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden">
