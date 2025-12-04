@@ -129,6 +129,15 @@ const AVAILABLE_MODELS: AvailableModel[] = [
 
   // Google Models
   {
+    id: "google-gemini-3-pro",
+    model: "gemini-3.0-pro-preview",
+    provider: "google",
+    displayName: "Gemini 3.0 Pro Preview",
+    contextWindow: 2097152,
+    inputCostPer1kTokens: 0.00125,
+    outputCostPer1kTokens: 0.01,
+  },
+  {
     id: "google-gemini-2-5-pro",
     model: "gemini-2.5-pro-preview-06-05",
     provider: "google",

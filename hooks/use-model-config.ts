@@ -9,7 +9,7 @@ export interface ModelConfig {
 }
 
 const DEFAULT_CONFIG: ModelConfig = {
-  defaultModel: "claude-sonnet-4-5-20250929",
+  defaultModel: "gemini-3.0-pro-preview",
   phaseModels: {
     request: null,
     spec: null,

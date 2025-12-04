@@ -62,11 +62,11 @@ export interface ModelInfo {
 
 // Default models per provider (updated December 2025)
 export const DEFAULT_MODELS: Record<Provider, string> = {
-  openai: "gpt-5.1",
+  openai: "gpt-5",
   anthropic: "claude-sonnet-4-5-20250929",
   google: "gemini-3.0-pro-preview",
-  ollama: "qwen3-coder:30b",
-  custom: "gpt-5.1",
+  ollama: "llama3.3:70b",
+  custom: "gpt-5",
 };
 
 // Provider display names
