@@ -1,10 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { User, Bot, Copy, Check } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/ui/markdown";
 import type { Message, StreamingMessage } from "@/types/message";
 
 interface MessageBubbleProps {
@@ -52,13 +52,17 @@ function MessageBubbleComponent({ message, isStreaming }: MessageBubbleProps) {
           )}
         </div>
 
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <p className="whitespace-pre-wrap break-words">
-            {message.content}
-            {isStreaming && (
-              <span className="inline-block w-1.5 h-4 ml-0.5 bg-foreground animate-pulse" />
-            )}
-          </p>
+        <div className="overflow-hidden">
+          {isUser ? (
+            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          ) : (
+            <>
+              <Markdown content={message.content} />
+              {isStreaming && (
+                <span className="inline-block w-1.5 h-4 ml-0.5 bg-foreground animate-pulse" />
+              )}
+            </>
+          )}
         </div>
 
         {"metadata" in message && message.metadata?.totalTokens && (
