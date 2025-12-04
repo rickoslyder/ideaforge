@@ -21,7 +21,7 @@ export class OpenAIProvider implements LLMClient {
         model: request.model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens,
+        max_completion_tokens: request.maxTokens,
         stream: false,
       }),
     });
@@ -60,7 +60,7 @@ export class OpenAIProvider implements LLMClient {
         model: request.model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens,
+        max_completion_tokens: request.maxTokens,
         stream: true,
         stream_options: { include_usage: true },
       }),
