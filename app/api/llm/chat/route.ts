@@ -22,9 +22,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  console.log("[LLM Chat] ====== ROUTE HANDLER INVOKED ======");
   console.log("[LLM Chat] POST request received", {
     url: req.url,
     method: req.method,
+    headers: Object.fromEntries(req.headers.entries()),
   });
 
   try {

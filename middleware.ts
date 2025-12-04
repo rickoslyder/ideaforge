@@ -1,6 +1,16 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// Debug logging for 405 investigation
+function logMiddleware(stage: string, req: Request, extra?: Record<string, unknown>) {
+  console.log(`[Middleware:${stage}]`, {
+    method: req.method,
+    url: req.url,
+    pathname: new URL(req.url).pathname,
+    ...extra,
+  });
+}
+
 const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
@@ -14,8 +24,11 @@ const isPublicRoute = createRouteMatcher([
 const isApiRoute = createRouteMatcher(["/api(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  logMiddleware("ENTRY", req, { isPublic: isPublicRoute(req), isApi: isApiRoute(req) });
+
   // Handle CORS preflight requests for API routes
   if (req.method === "OPTIONS" && isApiRoute(req)) {
+    logMiddleware("OPTIONS_HANDLER", req);
     return new NextResponse(null, {
       status: 204,
       headers: {
@@ -28,19 +41,26 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (!isPublicRoute(req)) {
+    logMiddleware("AUTH_CHECK", req);
     const { userId } = await auth();
+    logMiddleware("AUTH_RESULT", req, { hasUserId: !!userId });
     if (!userId) {
       // For API routes, return 401 instead of redirecting
       if (isApiRoute(req)) {
+        logMiddleware("RETURNING_401", req);
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+      logMiddleware("REDIRECTING_TO_SIGNIN", req);
       return (await auth()).redirectToSignIn();
     }
+  } else {
+    logMiddleware("PUBLIC_ROUTE_SKIP_AUTH", req);
   }
 
   // Explicitly continue to route handler for all requests (including authenticated)
+  logMiddleware("NEXT_RESPONSE", req);
   return NextResponse.next();
-}, { debug: process.env.NODE_ENV === "development" });
+}, { debug: true });
 
 export const config = {
   matcher: [
