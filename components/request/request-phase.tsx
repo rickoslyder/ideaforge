@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { RequestPreview } from "./request-preview";
 import { useChat } from "@/hooks/use-chat";
+import { useProject } from "@/hooks/use-project";
 import { getRequestPhasePrompt } from "@/prompts/request-phase";
 import { extractRequest, hasRequestBlock } from "@/lib/parsers/request-block";
+import { toast } from "@/hooks/use-toast";
 
 interface RequestPhaseProps {
   projectId: string;
@@ -20,8 +22,10 @@ export function RequestPhase({
   projectDescription,
 }: RequestPhaseProps) {
   const router = useRouter();
+  const { advanceToPhase } = useProject(projectId);
   const [extractedRequest, setExtractedRequest] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const systemPrompt = getRequestPhasePrompt(projectDescription);
 
@@ -55,11 +59,26 @@ export function RequestPhase({
     }
   }, [projectDescription, messages.length, isLoading, sendMessage]);
 
-  function handleConfirmRequest(finalRequest: string) {
-    // Save the finalized request and proceed to spec phase
-    // TODO: Save to database
-    console.log("Finalized request:", finalRequest);
-    router.push(`/projects/${projectId}/spec`);
+  async function handleConfirmRequest(finalRequest: string) {
+    setIsSaving(true);
+    try {
+      // Save the finalized request and advance to spec phase
+      await advanceToPhase("spec", finalRequest);
+      toast({
+        title: "Request confirmed",
+        description: "Moving to specification phase",
+      });
+      router.push(`/projects/${projectId}/spec`);
+    } catch (error) {
+      console.error("Failed to save request:", error);
+      toast({
+        title: "Error saving request",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function handleCancelPreview() {

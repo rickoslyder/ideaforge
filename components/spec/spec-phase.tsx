@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, FileText, ArrowRight } from "lucide-react";
+import { Settings, FileText, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -15,24 +15,32 @@ import {
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { MarkdownPreview } from "./markdown-preview";
 import { useChat } from "@/hooks/use-chat";
+import { useProject } from "@/hooks/use-project";
 import { useSpecConfig } from "@/hooks/use-spec-config";
 import { getFullSpecPrompt } from "@/prompts/spec-phase";
+import { toast } from "@/hooks/use-toast";
 
 interface SpecPhaseProps {
   projectId: string;
   projectName: string;
   projectRequest?: string;
+  initialSpec?: string | null;
 }
 
 export function SpecPhase({
   projectId,
   projectName,
   projectRequest,
+  initialSpec,
 }: SpecPhaseProps) {
   const router = useRouter();
+  const { advanceToPhase, savePhaseContent } = useProject(projectId);
   const { config, getEnabledSections } = useSpecConfig(projectId);
-  const [generatedSpec, setGeneratedSpec] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"chat" | "preview">("chat");
+  const [generatedSpec, setGeneratedSpec] = useState<string>(initialSpec || "");
+  const [activeTab, setActiveTab] = useState<"chat" | "preview">(
+    initialSpec ? "preview" : "chat"
+  );
+  const [isSaving, setIsSaving] = useState(false);
 
   const systemPrompt = projectRequest
     ? getFullSpecPrompt(projectRequest, getEnabledSections(), config.customInstructions)
@@ -43,9 +51,15 @@ export function SpecPhase({
       projectId,
       phase: "spec",
       systemPrompt,
-      onMessage: (message) => {
+      onMessage: async (message) => {
         if (message.role === "assistant") {
           setGeneratedSpec(message.content);
+          // Auto-save spec content after generation
+          try {
+            await savePhaseContent("spec", message.content);
+          } catch (err) {
+            console.error("Failed to auto-save spec:", err);
+          }
         }
       },
     });
@@ -58,8 +72,35 @@ export function SpecPhase({
     sendMessage("Generate the complete specification document.");
   }
 
-  function handleProceedToPlan() {
-    router.push(`/projects/${projectId}/plan`);
+  async function handleProceedToPlan() {
+    if (!generatedSpec) {
+      toast({
+        title: "No specification",
+        description: "Please generate a specification first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Save spec content and advance to plan phase
+      await advanceToPhase("plan", generatedSpec);
+      toast({
+        title: "Specification saved",
+        description: "Moving to plan phase",
+      });
+      router.push(`/projects/${projectId}/plan`);
+    } catch (error) {
+      console.error("Failed to save spec:", error);
+      toast({
+        title: "Error saving specification",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const hasSpec = generatedSpec.length > 0;
@@ -88,9 +129,18 @@ export function SpecPhase({
             Configure
           </Button>
           {hasSpec && (
-            <Button size="sm" onClick={handleProceedToPlan}>
-              Proceed to Plan
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button size="sm" onClick={handleProceedToPlan} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Proceed to Plan
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
           )}
         </div>

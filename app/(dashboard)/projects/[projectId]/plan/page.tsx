@@ -29,9 +29,10 @@ export default function PlanPage({ params }: PlanPageProps) {
     );
   }
 
-  // Get request and spec from project data
+  // Get request, spec, and plan from project data
   const projectRequest = project.requestContent || project.initialIdea;
   const projectSpec = project.specContent;
+  const projectPlan = project.planContent;
 
   return (
     <div className="h-full">
@@ -40,6 +41,7 @@ export default function PlanPage({ params }: PlanPageProps) {
         projectName={project.name}
         projectRequest={projectRequest}
         projectSpec={projectSpec}
+        initialPlanContent={projectPlan}
       />
     </div>
   );

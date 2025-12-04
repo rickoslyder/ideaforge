@@ -196,3 +196,15 @@ function inferCategory(text: string): StepCategory {
 
   return "other";
 }
+
+// Serialize plan steps back to markdown format for storage
+export function serializePlan(steps: PlanStep[]): string {
+  return steps
+    .map(
+      (step, index) =>
+        `## Step ${index + 1}: ${step.title}\n\n${step.description}\n\n### Tasks\n${step.tasks
+          .map((t) => `- [${t.completed ? "x" : " "}] ${t.title}`)
+          .join("\n")}`
+    )
+    .join("\n\n---\n\n");
+}

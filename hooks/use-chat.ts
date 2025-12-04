@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { nanoid } from "nanoid";
 import type { Message, StreamingMessage, ChatState } from "@/types/message";
 import type { Provider } from "@/lib/llm/types";
 import { parseSSEStreamChunks } from "@/lib/llm/streaming";
+import { useLocalMessages, createLocalMessage } from "@/lib/local-db/hooks";
+import type { LocalMessage } from "@/lib/local-db/schema";
 
 interface UseChatOptions {
   projectId: string;
@@ -12,7 +14,7 @@ interface UseChatOptions {
   model?: string;
   provider?: Provider;
   systemPrompt?: string;
-  onMessage?: (message: Message) => void;
+  onMessage?: (message: Message) => void | Promise<void>;
   onError?: (error: Error) => void;
 }
 
@@ -21,6 +23,30 @@ interface UseChatReturn extends ChatState {
   stop: () => void;
   clearMessages: () => void;
   setMessages: (messages: Message[]) => void;
+}
+
+// Convert LocalMessage to Message type
+function toMessage(local: LocalMessage): Message {
+  return {
+    id: local.localId,
+    projectId: local.projectLocalId,
+    phase: local.phase,
+    role: local.role,
+    content: local.content,
+    createdAt: local.createdAt.toISOString(),
+    metadata: local.model
+      ? {
+          model: local.model,
+          provider: local.provider,
+          inputTokens: local.inputTokens,
+          outputTokens: local.outputTokens,
+          totalTokens:
+            local.inputTokens && local.outputTokens
+              ? local.inputTokens + local.outputTokens
+              : undefined,
+        }
+      : undefined,
+  };
 }
 
 export function useChat({
@@ -32,13 +58,27 @@ export function useChat({
   onMessage,
   onError,
 }: UseChatOptions): UseChatReturn {
+  // Load persisted messages from IndexedDB
+  const localMessages = useLocalMessages(projectId, phase);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamingMessage, setStreamingMessage] =
     useState<StreamingMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Initialize messages from local storage
+  useEffect(() => {
+    if (localMessages.length > 0 && !initialized) {
+      setMessages(localMessages.map(toMessage));
+      setInitialized(true);
+    } else if (localMessages.length === 0 && !initialized) {
+      setInitialized(true);
+    }
+  }, [localMessages, initialized]);
 
   const stop = useCallback(() => {
     if (abortControllerRef.current) {
@@ -67,6 +107,17 @@ export function useChat({
       };
 
       setMessages((prev) => [...prev, userMessage]);
+
+      // Persist user message to IndexedDB
+      try {
+        await createLocalMessage(projectId, {
+          phase,
+          role: "user",
+          content: content.trim(),
+        });
+      } catch (err) {
+        console.error("Failed to persist user message:", err);
+      }
 
       // Create abort controller for this request
       abortControllerRef.current = new AbortController();
@@ -150,7 +201,21 @@ export function useChat({
 
         setMessages((prev) => [...prev, assistantMessage]);
         setStreamingMessage(null);
-        onMessage?.(assistantMessage);
+
+        // Persist assistant message to IndexedDB
+        try {
+          await createLocalMessage(projectId, {
+            phase,
+            role: "assistant",
+            content: fullContent,
+            model,
+            provider,
+          });
+        } catch (err) {
+          console.error("Failed to persist assistant message:", err);
+        }
+
+        await onMessage?.(assistantMessage);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
           // Request was cancelled, finalize streaming message if any content

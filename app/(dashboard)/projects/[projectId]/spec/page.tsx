@@ -29,8 +29,9 @@ export default function SpecPage({ params }: SpecPageProps) {
     );
   }
 
-  // Get the finalized request from the project data
+  // Get the finalized request and any saved spec from the project data
   const projectRequest = project.requestContent || project.initialIdea;
+  const savedSpec = project.specContent;
 
   return (
     <div className="h-full">
@@ -38,6 +39,7 @@ export default function SpecPage({ params }: SpecPageProps) {
         projectId={projectId}
         projectName={project.name}
         projectRequest={projectRequest}
+        initialSpec={savedSpec}
       />
     </div>
   );

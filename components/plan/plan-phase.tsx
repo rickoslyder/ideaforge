@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ListChecks, MessageSquare, Download, Copy, Check } from "lucide-react";
+import { ListChecks, MessageSquare, Download, Copy, Check, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -15,8 +15,10 @@ import {
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { PlanStepList } from "./plan-step-list";
 import { useChat } from "@/hooks/use-chat";
+import { useProject } from "@/hooks/use-project";
 import { getPlanPhaseSystemPrompt } from "@/prompts/plan-phase";
-import { parsePlan } from "@/lib/parsers/plan-steps";
+import { parsePlan, serializePlan } from "@/lib/parsers/plan-steps";
+import { toast } from "@/hooks/use-toast";
 import type { PlanStep } from "@/types/plan";
 
 interface PlanPhaseProps {
@@ -31,11 +33,23 @@ export function PlanPhase({
   projectName,
   projectRequest,
   projectSpec,
-}: PlanPhaseProps) {
+  initialPlanContent,
+}: PlanPhaseProps & { initialPlanContent?: string }) {
   const router = useRouter();
-  const [steps, setSteps] = useState<PlanStep[]>([]);
-  const [activeTab, setActiveTab] = useState<"chat" | "plan">("chat");
+  const { savePhaseContent } = useProject(projectId);
+  const [steps, setSteps] = useState<PlanStep[]>(() => {
+    // Initialize from saved plan content if available
+    if (initialPlanContent) {
+      return parsePlan(initialPlanContent);
+    }
+    return [];
+  });
+  const [activeTab, setActiveTab] = useState<"chat" | "plan">(() =>
+    initialPlanContent ? "plan" : "chat"
+  );
   const [copied, setCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const systemPrompt =
     projectRequest && projectSpec
@@ -47,16 +61,45 @@ export function PlanPhase({
       projectId,
       phase: "plan",
       systemPrompt,
-      onMessage: (message) => {
+      onMessage: async (message) => {
         if (message.role === "assistant") {
           const parsedSteps = parsePlan(message.content);
           if (parsedSteps.length > 0) {
             setSteps(parsedSteps);
             setActiveTab("plan");
+            // Auto-save plan after generation
+            try {
+              await savePhaseContent("plan", serializePlan(parsedSteps));
+            } catch (err) {
+              console.error("Failed to auto-save plan:", err);
+            }
           }
         }
       },
     });
+
+  // Save plan content when steps change (debounced via unsaved flag)
+  const savePlan = useCallback(async () => {
+    if (steps.length === 0) return;
+
+    setIsSaving(true);
+    try {
+      await savePhaseContent("plan", serializePlan(steps));
+      setHasUnsavedChanges(false);
+      toast({
+        title: "Plan saved",
+      });
+    } catch (error) {
+      console.error("Failed to save plan:", error);
+      toast({
+        title: "Error saving plan",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [steps, savePhaseContent]);
 
   function handleGenerate() {
     if (!projectRequest || !projectSpec) {
@@ -83,6 +126,7 @@ export function PlanPhase({
           : step
       )
     );
+    setHasUnsavedChanges(true);
   }
 
   async function handleCopy() {
@@ -147,6 +191,21 @@ export function PlanPhase({
 
         {hasPlan && (
           <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={savePlan}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleCopy}>
               {copied ? (
                 <Check className="mr-2 h-4 w-4 text-green-500" />
