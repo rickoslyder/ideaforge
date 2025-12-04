@@ -65,7 +65,7 @@ export function PlanPhase({
       phase: "plan",
       systemPrompt,
       model,
-      maxTokens: 16384, // Plans can be long, need more tokens
+      maxTokens: 32768, // Plans can be very long, need lots of tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {
           const parsedSteps = parsePlan(message.content);

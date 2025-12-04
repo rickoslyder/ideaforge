@@ -55,7 +55,7 @@ export function SpecPhase({
       phase: "spec",
       systemPrompt,
       model,
-      maxTokens: 16384, // Specs can be long, need more tokens
+      maxTokens: 32768, // Specs can be very long, need lots of tokens
       onMessage: async (message) => {
         if (message.role === "assistant") {
           setGeneratedSpec(message.content);
