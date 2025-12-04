@@ -22,13 +22,25 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  console.log("[LLM Chat] POST request received", {
+    url: req.url,
+    method: req.method,
+  });
+
   try {
     const { userId } = await auth();
+    console.log("[LLM Chat] Auth result:", { userId: userId ? "present" : "missing" });
+
     if (!userId) {
       return new Response("Unauthorized", { status: 401 });
     }
 
     const body = await req.json();
+    console.log("[LLM Chat] Request body:", {
+      model: body.model,
+      provider: body.provider,
+      messageCount: body.messages?.length
+    });
     let {
       provider: providedProvider,
       model,
@@ -81,10 +93,18 @@ export async function POST(req: NextRequest) {
 
     const decryptedKey = await decryptApiKey(apiKeyRecord.encrypted_key, userId);
 
+    const baseUrl = apiKeyRecord.endpoint_url || undefined;
+    console.log("[LLM Chat] Creating client:", {
+      provider,
+      model,
+      hasCustomEndpoint: !!baseUrl,
+      endpoint: baseUrl || "default"
+    });
+
     // Create LLM client
     const client = createLLMClient(provider, {
       apiKey: decryptedKey,
-      baseUrl: apiKeyRecord.endpoint_url || undefined,
+      baseUrl,
     });
 
     const request = {
@@ -113,7 +133,11 @@ export async function POST(req: NextRequest) {
       return Response.json(response);
     }
   } catch (error) {
-    console.error("LLM API error:", error);
+    console.error("[LLM Chat] Error:", {
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return new Response(
       error instanceof Error ? error.message : "Internal server error",
       { status: 500 }
