@@ -2,6 +2,8 @@
 const nextConfig = {
   // Only use standalone output for Docker builds, not Vercel
   ...(process.env.BUILD_STANDALONE === "true" && { output: "standalone" }),
+  // Disable trailing slash to prevent redirect issues with POST requests
+  trailingSlash: false,
   images: {
     remotePatterns: [
       {
