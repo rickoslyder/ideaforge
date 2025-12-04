@@ -1,22 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, MoreHorizontal, History, Download } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, History, Download, FileText, FileJson, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useExport } from "@/hooks/use-export";
+import type { ProjectDetail } from "@/types/project";
 
 interface ProjectHeaderProps {
   name: string;
   projectId: string;
+  project?: ProjectDetail;
 }
 
-export function ProjectHeader({ name, projectId }: ProjectHeaderProps) {
+export function ProjectHeader({ name, projectId, project }: ProjectHeaderProps) {
+  const { isExporting, exportProject } = useExport();
+
+  const handleExport = async (format: "markdown" | "json" | "clipboard") => {
+    if (!project) {
+      console.error("No project data available for export");
+      return;
+    }
+    await exportProject(project, format, "full");
+  };
+
   return (
     <div className="flex items-center justify-between border-b bg-background px-4 py-2">
       <div className="flex items-center gap-3">
@@ -43,10 +60,27 @@ export function ProjectHeader({ name, projectId }: ProjectHeaderProps) {
               Version History
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={isExporting || !project}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => handleExport("markdown")}>
+                <FileText className="mr-2 h-4 w-4" />
+                Download as Markdown
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("json")}>
+                <FileJson className="mr-2 h-4 w-4" />
+                Download as JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("clipboard")}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy to Clipboard
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

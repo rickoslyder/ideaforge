@@ -16,9 +16,13 @@ export async function GET(
     const snapshots = await getSnapshots(params.projectId);
     return NextResponse.json({ snapshots });
   } catch (error) {
-    console.error("Error fetching snapshots:", error);
+    console.error("Error fetching snapshots:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      error,
+    });
     return NextResponse.json(
-      { error: "Failed to fetch snapshots" },
+      { error: error instanceof Error ? error.message : "Failed to fetch snapshots" },
       { status: 500 }
     );
   }
@@ -48,9 +52,13 @@ export async function POST(
 
     return NextResponse.json({ snapshot });
   } catch (error) {
-    console.error("Error creating snapshot:", error);
+    console.error("Error creating snapshot:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      error,
+    });
     return NextResponse.json(
-      { error: "Failed to create snapshot" },
+      { error: error instanceof Error ? error.message : "Failed to create snapshot" },
       { status: 500 }
     );
   }

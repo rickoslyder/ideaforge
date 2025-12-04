@@ -44,7 +44,7 @@ function ProjectLayoutContent({
 
   return (
     <div className="flex h-full flex-col">
-      <ProjectHeader name={project.name} projectId={projectId} />
+      <ProjectHeader name={project.name} projectId={projectId} project={project} />
       <PhaseIndicator
         currentPhase={project.currentPhase}
         activePhase={activePhase}
