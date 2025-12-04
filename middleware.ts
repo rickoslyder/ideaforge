@@ -36,8 +36,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Explicitly continue to the route handler
-  return NextResponse.next();
+  // Don't return anything - let clerkMiddleware handle continuation
 });
 
 export const config = {

@@ -7,6 +7,20 @@ import { getApiKey, getApiKeys } from "@/lib/db/queries/api-keys";
 import type { Provider, Message } from "@/lib/llm/types";
 import { DEFAULT_MODELS } from "@/lib/llm/types";
 
+// Ensure this runs on Node.js runtime (not Edge) for Clerk compatibility
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// Debug endpoint to verify the route exists
+export async function GET() {
+  return Response.json({
+    status: "ok",
+    endpoint: "/api/llm/chat",
+    methods: ["GET", "POST"],
+    timestamp: new Date().toISOString()
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
