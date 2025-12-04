@@ -17,6 +17,15 @@ export interface AvailableModel {
 const AVAILABLE_MODELS: AvailableModel[] = [
   // OpenAI Models
   {
+    id: "openai-gpt-5-1",
+    model: "gpt-5.1",
+    provider: "openai",
+    displayName: "GPT-5.1",
+    contextWindow: 256000,
+    inputCostPer1kTokens: 0.01,
+    outputCostPer1kTokens: 0.03,
+  },
+  {
     id: "openai-gpt-5",
     model: "gpt-5",
     provider: "openai",
