@@ -37,8 +37,9 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Don't return anything - let clerkMiddleware handle continuation
-});
+  // Explicitly continue to route handler for all requests (including authenticated)
+  return NextResponse.next();
+}, { debug: process.env.NODE_ENV === "development" });
 
 export const config = {
   matcher: [
