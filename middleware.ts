@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks/clerk",
   "/api/health",
   "/api/debug(.*)",
+  "/api/llm/(.*)",  // Let API routes handle their own auth to avoid middleware issues
 ]);
 
 const isApiRoute = createRouteMatcher(["/api(.*)"]);
