@@ -96,14 +96,28 @@ export function parseSSEStreamChunks(
 export function streamToReadable(
   generator: AsyncGenerator<StreamChunk>
 ): ReadableStream {
+  let pullCount = 0;
   return new ReadableStream({
     async pull(controller) {
-      const { value, done } = await generator.next();
-      if (done) {
+      pullCount++;
+      if (pullCount === 1) {
+        console.log("[streamToReadable] First pull - starting generator consumption");
+      }
+      try {
+        const { value, done } = await generator.next();
+        if (done) {
+          console.log("[streamToReadable] Generator done, closing stream");
+          controller.close();
+        } else {
+          const data = JSON.stringify(value);
+          controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
+        }
+      } catch (error) {
+        console.error("[streamToReadable] Error in generator:", error);
+        // Send error through stream
+        const errorChunk = JSON.stringify({ type: "error", error: String(error) });
+        controller.enqueue(new TextEncoder().encode(`data: ${errorChunk}\n\n`));
         controller.close();
-      } else {
-        const data = JSON.stringify(value);
-        controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
       }
     },
   });

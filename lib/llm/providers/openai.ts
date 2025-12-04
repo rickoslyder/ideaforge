@@ -44,6 +44,12 @@ export class OpenAIProvider implements LLMClient {
   }
 
   async *streamChat(request: ChatRequest): AsyncGenerator<StreamChunk> {
+    console.log("[OpenAI Provider] streamChat called", {
+      model: request.model,
+      messageCount: request.messages.length,
+      baseUrl: this.baseUrl,
+    });
+
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -60,9 +66,16 @@ export class OpenAIProvider implements LLMClient {
       }),
     });
 
+    console.log("[OpenAI Provider] Fetch response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`OpenAI API error: ${error}`);
+      console.error("[OpenAI Provider] API error:", { status: response.status, error });
+      throw new Error(`OpenAI API error (${response.status}): ${error}`);
     }
 
     const reader = response.body?.getReader();

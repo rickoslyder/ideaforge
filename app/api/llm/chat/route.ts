@@ -118,9 +118,12 @@ export async function POST(req: NextRequest) {
     };
 
     if (stream) {
+      console.log("[LLM Chat] Starting streaming response");
       // Streaming response
       const generator = client.streamChat(request);
+      console.log("[LLM Chat] Generator created");
       const readable = streamToReadable(generator);
+      console.log("[LLM Chat] ReadableStream created, returning response");
 
       return new Response(readable, {
         headers: {
@@ -130,8 +133,10 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
+      console.log("[LLM Chat] Starting non-streaming response");
       // Non-streaming response
       const response = await client.chat(request);
+      console.log("[LLM Chat] Non-streaming response received:", { hasContent: !!response.content });
       return Response.json(response);
     }
   } catch (error) {
