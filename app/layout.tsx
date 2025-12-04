@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
+import { ModelConfigProvider } from "@/contexts/model-config-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,9 +32,11 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ClerkProvider>
-          {children}
-          <Toaster />
-          <KeyboardShortcutsDialog />
+          <ModelConfigProvider>
+            {children}
+            <Toaster />
+            <KeyboardShortcutsDialog />
+          </ModelConfigProvider>
         </ClerkProvider>
       </body>
     </html>

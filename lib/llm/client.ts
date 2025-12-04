@@ -27,7 +27,14 @@ export function createLLMClient(
 
 // Helper to determine provider from model string
 export function getProviderFromModel(model: string): Provider {
-  if (model.startsWith("gpt-") || model.startsWith("o1-") || model.startsWith("o3-")) {
+  // OpenAI models: gpt-*, o1, o1-*, o3, o3-*
+  if (
+    model.startsWith("gpt-") ||
+    model === "o1" ||
+    model.startsWith("o1-") ||
+    model === "o3" ||
+    model.startsWith("o3-")
+  ) {
     return "openai";
   }
   if (model.startsWith("claude-")) {
@@ -35,6 +42,10 @@ export function getProviderFromModel(model: string): Provider {
   }
   if (model.startsWith("gemini-")) {
     return "google";
+  }
+  // Ollama models often have colons (e.g., llama3.3:70b) or specific prefixes
+  if (model.includes(":") || model.startsWith("llama") || model.startsWith("qwen") || model.startsWith("deepseek")) {
+    return "ollama";
   }
   if (model.includes("/")) {
     // LiteLLM format: provider/model

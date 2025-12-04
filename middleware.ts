@@ -12,6 +12,19 @@ const isPublicRoute = createRouteMatcher([
 const isApiRoute = createRouteMatcher(["/api(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // Handle CORS preflight requests for API routes
+  if (req.method === "OPTIONS" && isApiRoute(req)) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+
   if (!isPublicRoute(req)) {
     const { userId } = await auth();
     if (!userId) {
@@ -22,6 +35,9 @@ export default clerkMiddleware(async (auth, req) => {
       return (await auth()).redirectToSignIn();
     }
   }
+
+  // Explicitly continue to the route handler
+  return NextResponse.next();
 });
 
 export const config = {
