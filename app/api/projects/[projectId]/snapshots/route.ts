@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getSnapshots, createSnapshotFromProject } from "@/lib/db/queries/snapshots";
-import { getProject } from "@/lib/db/queries/projects";
+import { getProject, resolveProjectId } from "@/lib/db/queries/projects";
 
 export async function GET(
   request: NextRequest,
@@ -13,7 +13,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const snapshots = await getSnapshots(params.projectId);
+    // Resolve local ID to UUID if needed
+    const resolvedId = await resolveProjectId(params.projectId, userId);
+    if (!resolvedId) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    const snapshots = await getSnapshots(resolvedId);
     return NextResponse.json({ snapshots });
   } catch (error) {
     console.error("Error fetching snapshots:", {

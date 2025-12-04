@@ -22,7 +22,8 @@ export async function getProject(
   projectId: string,
   userId: string
 ): Promise<Project | null> {
-  const { data, error } = await supabase
+  // First try by UUID (remote id)
+  const { data: byId, error: byIdError } = await supabase
     .from("projects")
     .select("*")
     .eq("id", projectId)
@@ -30,8 +31,20 @@ export async function getProject(
     .is("deleted_at", null)
     .single();
 
-  if (error && error.code !== "PGRST116") throw error;
-  return data;
+  if (byId) return byId;
+  if (byIdError && byIdError.code !== "PGRST116") throw byIdError;
+
+  // Fallback to local_id lookup
+  const { data: byLocalId, error: byLocalIdError } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("local_id", projectId)
+    .eq("clerk_user_id", userId)
+    .is("deleted_at", null)
+    .single();
+
+  if (byLocalIdError && byLocalIdError.code !== "PGRST116") throw byLocalIdError;
+  return byLocalId;
 }
 
 export async function createProject(
@@ -52,10 +65,16 @@ export async function updateProject(
   userId: string,
   updates: UpdateProject
 ): Promise<Project> {
+  // First resolve the project ID (could be local_id or UUID)
+  const project = await getProject(projectId, userId);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
   const { data, error } = await supabase
     .from("projects")
     .update(updates)
-    .eq("id", projectId)
+    .eq("id", project.id)
     .eq("clerk_user_id", userId)
     .select()
     .single();
@@ -88,11 +107,17 @@ export async function deleteProject(
   projectId: string,
   userId: string
 ): Promise<void> {
+  // First resolve the project ID (could be local_id or UUID)
+  const project = await getProject(projectId, userId);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
   // Soft delete
   const { error } = await supabase
     .from("projects")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", projectId)
+    .eq("id", project.id)
     .eq("clerk_user_id", userId);
 
   if (error) throw error;
@@ -110,4 +135,13 @@ export async function getProjectsByLocalIds(
 
   if (error) throw error;
   return data || [];
+}
+
+// Helper to resolve a project ID (local or UUID) to the project UUID
+export async function resolveProjectId(
+  projectIdOrLocalId: string,
+  userId: string
+): Promise<string | null> {
+  const project = await getProject(projectIdOrLocalId, userId);
+  return project?.id || null;
 }
