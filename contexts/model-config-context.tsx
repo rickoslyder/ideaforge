@@ -9,7 +9,7 @@ export interface ModelConfig {
 }
 
 const DEFAULT_CONFIG: ModelConfig = {
-  defaultModel: "gemini-3.0-pro-preview",
+  defaultModel: "gemini-3-pro-preview",
   phaseModels: {
     request: null,
     spec: null,

@@ -64,7 +64,7 @@ export interface ModelInfo {
 export const DEFAULT_MODELS: Record<Provider, string> = {
   openai: "gpt-5.1",
   anthropic: "claude-sonnet-4-5-20250929",
-  google: "gemini-3.0-pro-preview",
+  google: "gemini-3-pro-preview",
   ollama: "llama3.3:70b",
   custom: "gpt-5.1",
 };

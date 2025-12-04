@@ -139,7 +139,7 @@ const AVAILABLE_MODELS: AvailableModel[] = [
   // Google Models
   {
     id: "google-gemini-3-pro",
-    model: "gemini-3.0-pro-preview",
+    model: "gemini-3-pro-preview",
     provider: "google",
     displayName: "Gemini 3.0 Pro Preview",
     contextWindow: 2097152,
