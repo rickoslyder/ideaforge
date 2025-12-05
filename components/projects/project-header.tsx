@@ -1,20 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, MoreHorizontal, History, Download, FileText, FileJson, Copy } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, History, Download, FileText, FileJson, Copy, FolderArchive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useExport } from "@/hooks/use-export";
+import { useExport, type ExportFormat } from "@/hooks/use-export";
 import type { ProjectDetail } from "@/types/project";
 
 interface ProjectHeaderProps {
@@ -26,7 +26,7 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ name, projectId, project }: ProjectHeaderProps) {
   const { isExporting, exportProject } = useExport();
 
-  const handleExport = async (format: "markdown" | "json" | "clipboard") => {
+  const handleExport = async (format: ExportFormat) => {
     if (!project) {
       console.error("No project data available for export");
       return;
@@ -53,7 +53,7 @@ export function ProjectHeader({ name, projectId, project }: ProjectHeaderProps) 
             <span className="sr-only">Project options</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem asChild>
             <Link href={`/projects/${projectId}/snapshots`}>
               <History className="mr-2 h-4 w-4" />
@@ -66,18 +66,29 @@ export function ProjectHeader({ name, projectId, project }: ProjectHeaderProps) 
               <Download className="mr-2 h-4 w-4" />
               Export
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            <DropdownMenuSubContent className="w-52">
+              <DropdownMenuLabel>Single File</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleExport("markdown")}>
                 <FileText className="mr-2 h-4 w-4" />
-                Download as Markdown
+                Markdown (.md)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("json")}>
                 <FileJson className="mr-2 h-4 w-4" />
-                Download as JSON
+                JSON (.json)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("clipboard")}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copy to Clipboard
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Individual Files (ZIP)</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleExport("zip-markdown")}>
+                <FolderArchive className="mr-2 h-4 w-4" />
+                Markdown Files (.zip)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("zip-json")}>
+                <FolderArchive className="mr-2 h-4 w-4" />
+                JSON Files (.zip)
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>

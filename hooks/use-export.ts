@@ -10,11 +10,13 @@ import {
   exportPhaseToJson,
   copyToClipboard,
   downloadFile,
+  downloadZip,
   sanitizeFilename,
   type ExportOptions,
+  type ZipExportFormat,
 } from "@/lib/export";
 
-export type ExportFormat = "markdown" | "json" | "clipboard";
+export type ExportFormat = "markdown" | "json" | "clipboard" | "zip-markdown" | "zip-json";
 export type ExportScope = "full" | Phase;
 
 interface UseExportReturn {
@@ -43,6 +45,13 @@ export function useExport(): UseExportReturn {
       setError(null);
 
       try {
+        // Handle ZIP exports (individual files)
+        if (format === "zip-markdown" || format === "zip-json") {
+          const zipFormat: ZipExportFormat = format === "zip-json" ? "json" : "markdown";
+          await downloadZip(project, zipFormat);
+          return true;
+        }
+
         let content: string;
         let filename: string;
         const baseFilename = sanitizeFilename(project.name);
