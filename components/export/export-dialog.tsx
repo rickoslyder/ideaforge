@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileJson, FileText, Copy, Check, Loader2 } from "lucide-react";
+import { Download, FileJson, FileText, Copy, Check, Loader2, FolderArchive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -63,6 +63,8 @@ export function ExportDialog({ project, trigger }: ExportDialogProps) {
     markdown: <FileText className="h-4 w-4" />,
     json: <FileJson className="h-4 w-4" />,
     clipboard: <Copy className="h-4 w-4" />,
+    "zip-markdown": <FolderArchive className="h-4 w-4" />,
+    "zip-json": <FolderArchive className="h-4 w-4" />,
   };
 
   return (
@@ -111,6 +113,18 @@ export function ExportDialog({ project, trigger }: ExportDialogProps) {
                   <div className="flex items-center gap-2">
                     <Copy className="h-4 w-4" />
                     Copy to Clipboard
+                  </div>
+                </SelectItem>
+                <SelectItem value="zip-markdown">
+                  <div className="flex items-center gap-2">
+                    <FolderArchive className="h-4 w-4" />
+                    ZIP (Markdown files)
+                  </div>
+                </SelectItem>
+                <SelectItem value="zip-json">
+                  <div className="flex items-center gap-2">
+                    <FolderArchive className="h-4 w-4" />
+                    ZIP (JSON files)
                   </div>
                 </SelectItem>
               </SelectContent>
