@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Key, Settings, User } from "lucide-react";
+import { Key, Settings, User, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const settingsNav = [
@@ -15,6 +15,11 @@ const settingsNav = [
     title: "API Keys",
     href: "/settings/api-keys",
     icon: Key,
+  },
+  {
+    title: "API Tokens",
+    href: "/settings/tokens",
+    icon: KeyRound,
   },
   {
     title: "Profile",

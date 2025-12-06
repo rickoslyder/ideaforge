@@ -19,6 +19,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/health",
   "/api/debug(.*)",
   "/api/llm/(.*)",  // Let API routes handle their own auth to avoid middleware issues
+  "/api/capture",   // Token-authenticated (validated in handler)
 ]);
 
 const isApiRoute = createRouteMatcher(["/api(.*)"]);

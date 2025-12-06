@@ -8,6 +8,7 @@ export type ExtractionStatus = "pending" | "processing" | "completed" | "failed"
 export type Provider = "openai" | "anthropic" | "google" | "ollama" | "custom";
 export type Theme = "light" | "dark" | "system";
 export type SnapshotTrigger = "auto" | "manual";
+export type CaptureSourceType = "api" | "extension" | "pwa" | "share";
 
 export interface UserPreferences {
   id: string;
@@ -99,6 +100,35 @@ export interface ProjectSnapshotData {
   plan_content: string | null;
 }
 
+export interface ApiToken {
+  id: string;
+  clerk_user_id: string;
+  name: string;
+  token_prefix: string;
+  token_hash: string;
+  scopes: string[];
+  last_used_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  revoked_at: string | null;
+}
+
+export interface QuickCapture {
+  id: string;
+  clerk_user_id: string;
+  title: string;
+  idea: string | null;
+  source_url: string | null;
+  source_title: string | null;
+  selected_text: string | null;
+  source_type: CaptureSourceType;
+  tags: string[] | null;
+  metadata: Record<string, unknown> | null;
+  project_id: string | null;
+  created_at: string;
+  converted_at: string | null;
+}
+
 export interface SpecConfig {
   sections: SpecSection[];
 }
@@ -142,4 +172,11 @@ export type UpdateMessage = Partial<
 
 export type UpdateApiKey = Partial<
   Omit<ApiKey, "id" | "clerk_user_id" | "created_at">
+>;
+
+export type InsertApiToken = Omit<ApiToken, "id" | "created_at" | "last_used_at" | "revoked_at">;
+
+export type InsertQuickCapture = Omit<
+  QuickCapture,
+  "id" | "created_at" | "converted_at" | "project_id"
 >;

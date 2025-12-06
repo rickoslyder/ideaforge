@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IdeaForge Quick Capture</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      background: #1a1a1a;
+      color: #e5e5e5;
+    }
+    .header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 16px;
+    }
+    .setup-notice {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .setup-notice p {
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .setup-notice button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .setup-notice button:hover {
+      background: #2563eb;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      background: #262626;
+      border: 1px solid #404040;
+      border-radius: 6px;
+      color: #e5e5e5;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #666;
+    }
+    .source-info {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #3b82f6;
+    }
+    .checkbox-group label {
+      font-size: 13px;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .buttons button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #2563eb;
+    }
+    .btn-primary:disabled {
+      background: #1e40af;
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #404040;
+      color: #e5e5e5;
+    }
+    .btn-secondary:hover {
+      background: #525252;
+    }
+    .status {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .status.success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    .status.error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    .status.loading {
+      color: #888;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+    <h1>Quick Capture</h1>
+  </div>
+
+  <div id="setup-notice" class="setup-notice hidden">
+    <p>Set up your API token to start capturing ideas.</p>
+    <button id="open-options">Configure Extension</button>
+  </div>
+
+  <div id="capture-form" class="content hidden">
+    <div class="form-group">
+      <label for="title">Title *</label>
+      <input type="text" id="title" placeholder="What's your idea?" autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="idea">Details</label>
+      <textarea id="idea" placeholder="Add more context..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Source</label>
+      <div class="source-info" id="source-info">-</div>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="create-project">
+      <label for="create-project">Create as project immediately</label>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+    <div class="buttons">
+      <button type="button" class="btn-secondary" id="cancel">Cancel</button>
+      <button type="button" class="btn-primary" id="capture">Capture</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
