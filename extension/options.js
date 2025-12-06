@@ -1,6 +1,6 @@
 // IdeaForge Quick Capture - Options Script
 
-const DEFAULT_ENDPOINT = "https://ideaforge.vercel.app";
+const DEFAULT_ENDPOINT = "https://ideaforge.rbnk.uk";
 
 // DOM Elements
 const apiTokenInput = document.getElementById("api-token");

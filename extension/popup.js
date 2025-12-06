@@ -1,6 +1,6 @@
 // IdeaForge Quick Capture - Popup Script
 
-const DEFAULT_ENDPOINT = "https://ideaforge.vercel.app";
+const DEFAULT_ENDPOINT = "https://ideaforge.rbnk.uk";
 
 // DOM Elements
 const setupNotice = document.getElementById("setup-notice");

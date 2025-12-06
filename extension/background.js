@@ -1,6 +1,6 @@
 // IdeaForge Quick Capture - Background Service Worker
 
-const DEFAULT_ENDPOINT = "https://ideaforge.vercel.app";
+const DEFAULT_ENDPOINT = "https://ideaforge.rbnk.uk";
 
 // Create context menu on install
 chrome.runtime.onInstalled.addListener(() => {
